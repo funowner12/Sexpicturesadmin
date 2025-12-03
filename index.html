@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YT FunOw - God Mode Admin</title>
+
+  <!-- Latest Working Firebase v9+ Modular (No White Screen) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+      databaseURL: "https://ytfunown2-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // All References
+    const refs = {
+      maintenance: ref(db, "data1/data1"),
+      giftcode: ref(db, "data2/data2"),
+      notice: ref(db, "data3/data3"),
+      title: ref(db, "data4/data4"),
+      joinpopup: ref(db, "data5/data5")
+    };
+
+    window.firebaseDB = { db, refs, set, onValue }; // Global access for other functions
+  </script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root { --p:#8b5cf6; --s:#10b981; --d:#ef4444; --dark:#1e293b; --light:#f8fafc; --gray:#e2e8f0; }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh; color:#333; padding:20px 0; transition:0.5s;
+    }
+    .offline { background:#2d3436 !important; }
+    .container { max-width:1200px; margin:0 auto; padding:0 15px; }
+    .header { text-align:center; color:white; margin-bottom:35px; }
+    .header h1 { font-size:3rem; }
+    .header p { font-size:1.3rem; opacity:0.9; }
+
+    .online-status {
+      position:fixed; top:15px; right:15px; padding:10px 20px; border-radius:50px;
+      color:white; font-weight:600; z-index:9999; transition:0.4s; box-shadow:0 5px 15px rgba(0,0,0,0.3);
+    }
+    .online { background:#10b981; }
+    .offline-status { background:#ef4444; }
+
+    .tabs { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:30px;
+      background:rgba(255,255,255,0.15); padding:15px; border-radius:20px; backdrop-filter:blur(12px);
+    }
+    .tab { flex:1; min-width:140px; padding:18px; text-align:center; color:white; font-weight:600;
+      cursor:pointer; border-radius:16px; transition:0.4s;
+    }
+    .tab:hover { background:rgba(255,255,255,0.25); transform:translateY(-6px); }
+    .tab.active { background:rgba(255,255,255,0.35); }
+
+    .card { background:white; border-radius:26px; padding:38px; margin-bottom:28px;
+      box-shadow:0 20px 60px rgba(0,0,0,0.18); opacity:0; transform:translateY(50px); transition:0.8s;
+    }
+    .card.show { opacity:1; transform:translateY(0); }
+
+    h2 { color:var(--p); margin-bottom:28px; font-size:2rem; text-align:center; }
+
+    .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:28px; }
+    label { display:block; margin-bottom:12px; font-weight:600; color:var(--dark); }
+    input, textarea {
+      width:100%; padding:17px; border:2px solid var(--gray); border-radius:16px;
+      font-size:16px; transition:0.3s;
+    }
+    input:focus, textarea:focus { outline:none; border-color:var(--p); box-shadow:0 0 0 5px rgba(139,92,246,0.25); }
+
+    .switch { position:relative; display:inline-block; width:82px; height:44px; }
+    .switch input { opacity:0; width:0; height:0; }
+    .slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0;
+      background:#cbd5e0; transition:.4s; border-radius:44px;
+    }
+    .slider:before { position:absolute; content:""; height:36px; width:36px;
+      left:4px; bottom:4px; background:white; transition:.4s; border-radius:50%;
+    }
+    input:checked + .slider { background:var(--s); }
+    input:checked + .slider:before { transform:translateX(38px); }
+
+    .btn { padding:18px 36px; border:none; border-radius:16px; font-size:18px;
+      font-weight:600; cursor:pointer; background:var(--s); color:white; transition:0.4s;
+    }
+    .btn:hover { background:#059669; transform:translateY(-5px); box-shadow:0 15px 35px rgba(16,185,129,0.5); }
+    .btn:disabled { background:#95a5a6; cursor:not-allowed; transform:none; }
+
+    .status { padding:20px; border-radius:16px; text-align:center; font-weight:600;
+      margin:25px 0; color:white; }
+    .success { background:#10b981; }
+    .error { background:#ef4444; }
+  </style>
+</head>
+<body>
+
+  <!-- Online/Offline Indicator -->
+  <div id="connectionStatus" class="online-status online">Online</div>
+
+  <div class="container">
+    <div class="header">
+      <h1>YT FunOw God Mode</h1>
+      <p>6 Features • Internet Checker • 100% Working 2025</p>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="openTab('maintenance')">Maintenance</div>
+      <div class="tab" onclick="openTab('giftcode')">Gift Code</div>
+      <div class="tab" onclick="openTab('notice')">Notice</div>
+      <div class="tab" onclick="openTab('joinpopup')">Join Popup (5s)</div>
+      <div class="tab" onclick="openTab('title')">App Title</div>
+    </div>
+
+    <div id="status" class="status success" style="display:none;"></div>
+
+    <!-- Maintenance -->
+    <div id="maintenance" class="tab-content">
+      <div class="card"><h2>Maintenance Mode</h2>
+        <div class="form-grid">
+          <div><label>Enable</label><label class="switch"><input type="checkbox" id="m_maintenance"><span class="slider"></span></label></div>
+          <div><label>Title</label><input type="text" id="m_mtitle"></div>
+          <div><label>Message</label><textarea id="m_mmessage"></textarea></div>
+          <div><label>Button</label><input type="text" id="m_okbutton"></div>
+          <div><label>Link</label><input type="text" id="m_tglink"></div>
+        </div>
+        <center><button class="btn" onclick="saveData('maintenance')">Save</button></center>
+      </div>
+    </div>
+
+    <!-- Gift Code -->
+    <div id="giftcode" class="tab-content" style="display:none;">
+      <div class="card"><h2>Gift Code</h2>
+        <div class="form-grid">
+          <div><label>Show</label><label class="switch"><input type="checkbox" id="g_giftcode"><span class="slider"></span></label></div>
+          <div><label>Title</label><input type="text" id="g_title"></div>
+          <div><label>Code</label><input type="text" id="g_code"></div>
+          <div><label>Button</label><input type="text" id="g_okbutton"></div>
+        </div>
+        <center><button class="btn" onclick="saveData('giftcode')">Save</button></center>
+      </div>
+    </div>
+
+    <!-- Notice -->
+    <div id="notice" class="tab-content" style="display:none;">
+      <div class="card"><h2>Notice</h2>
+        <div class="form-grid">
+          <div><label>Show</label><label class="switch"><input type="checkbox" id="n_noticemessage"><span class="slider"></span></label></div>
+          <div><label>Text</label><textarea id="n_noticecode" rows="5"></textarea></div>
+        </div>
+        <center><button class="btn" onclick="saveData('notice')">Save</button></center>
+      </div>
+    </div>
+
+    <!-- Join Popup -->
+    <div id="joinpopup" class="tab-content" style="display:none;">
+      <div class="card"><h2>Join Popup (5 Sec)</h2>
+        <div class="form-grid">
+          <div><label>Enable</label><label class="switch"><input type="checkbox" id="j_onetimejoin"><span class="slider"></span></label></div>
+          <div><label>Title</label><input type="text" id="j_title"></div>
+          <div><label>Message</label><textarea id="j_message"></textarea></div>
+          <div><label>Button</label><input type="text" id="j_okbutton"></div>
+          <div><label>Link</label><input type="text" id="j_put_link"></div>
+        </div>
+        <center><button class="btn" onclick="saveData('joinpopup')">Save</button></center>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <div id="title" class="tab-content" style="display:none;">
+      <div class="card"><h2>App Title</h2>
+        <div class="form-grid">
+          <div><label>Title</label><input type="text" id="t_title"></div>
+        </div>
+        <center><button class="btn" onclick="saveData('title')">Update Title</button></center>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const db = window.firebaseDB.db;
+    const refs = window.firebaseDB.refs;
+    const statusEl = document.getElementById('status');
+    const connEl = document.getElementById('connectionStatus');
+
+    // Internet Checker
+    function updateOnlineStatus() {
+      if (navigator.onLine) {
+        connEl.textContent = "Online";
+        connEl.className = "online-status online";
+        document.body.classList.remove('offline');
+        loadAllData();
+      } else {
+        connEl.textContent = "No Internet";
+        connEl.className = "online-status offline-status";
+        document.body.classList.add('offline');
+        showStatus("No Internet Connection!", "error");
+      }
+    }
+
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    setInterval(updateOnlineStatus, 3000);
+    updateOnlineStatus();
+
+    // Load Data
+    function loadAllData() {
+      onValue(refs.maintenance, s => load('m_', s.val()));
+      onValue(refs.giftcode, s => load('g_', s.val()));
+      onValue(refs.notice, s => load('n_', s.val()));
+      onValue(refs.joinpopup, s => load('j_', s.val()));
+      onValue(refs.title, s => { if(s.val()?.title) document.getElementById('t_title').value = s.val().title; });
+    }
+
+    function load(prefix, data) {
+      if (!data) return;
+      Object.keys(data).forEach(k => {
+        const el = document.getElementById(prefix + k);
+        if (el) el[el.type==='checkbox' ? 'checked' : 'value'] = (el.type==='checkbox' ? data[k]==="true" : data[k]);
+      });
+    }
+
+    // Save Function
+    window.saveData = function(type) {
+      if (!navigator.onLine) return showStatus("No Internet!", "error");
+
+      const data = {};
+      let ref;
+
+      if (type === 'maintenance') { ref = refs.maintenance;
+        ['maintenance','mtitle','mmessage','okbutton','tglink'].forEach(k => {
+          const el = document.getElementById('m_'+k);
+          data[k] = el.type==='checkbox' ? (el.checked?"true":"false") : el.value;
+        });
+      }
+      else if (type === 'giftcode') { ref = refs.giftcode;
+        ['giftcode','title','code','okbutton'].forEach(k => data[k] = document.getElementById('g_'+k).type==='checkbox' ? (document.getElementById('g_'+k).checked?"true":"false") : document.getElementById('g_'+k).value);
+      }
+      else if (type === 'notice') { ref = refs.notice;
+        data.noticemessage = document.getElementById('n_noticemessage').checked ? "true" : "false";
+        data.noticecode = document.getElementById('n_noticecode').value;
+      }
+      else if (type === 'joinpopup') { ref = refs.joinpopup;
+        ['onetimejoin','title','message','okbutton','put_link'].forEach(k => {
+          const el = document.getElementById('j_'+k);
+          data[k] = el.type==='checkbox' ? (el.checked?"true":"false") : el.value;
+        });
+      }
+      else if (type === 'title') { ref = refs.title;
+        data.title = document.getElementById('t_title').value;
+      }
+
+      set(ref, data)
+        .then(() => showStatus("Saved Successfully!", "success"))
+        .catch(() => showStatus("Save Failed!", "error"));
+    };
+
+    function showStatus(msg, type) {
+      statusEl.innerHTML = msg;
+      statusEl.className = `status ${type}`;
+      statusEl.style.display = 'block';
+      setTimeout(() => statusEl.style.display = 'none', 3000);
+    }
+
+    window.openTab = function(tab) {
+      document.querySelectorAll('.tab-content').forEach(t => t.style.display='none');
+      document.getElementById(tab).style.display='block';
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      document.querySelectorAll('.card').forEach(c => {
+        c.classList.remove('show');
+        setTimeout(() => c.classList.add('show'), 100);
+      });
+    };
+
+    // Start
+    setTimeout(() => document.querySelectorAll('.card').forEach(c => c.classList.add('show')), 300);
+  </script>
+</body>
+</html>
